@@ -1,0 +1,24 @@
+{
+  "tests": [
+    {
+      "name": "Generate test for photosynthesis topic",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "topic": "5 класс тема Фотосинтез"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "questions": "array",
+        "topic": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Handle OPTIONS request",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    }
+  ]
+}

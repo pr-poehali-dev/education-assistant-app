@@ -28,6 +28,8 @@ const Index = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [testTopic, setTestTopic] = useState('');
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [testError, setTestError] = useState('');
 
   const menuItems = [
     { id: 'home', label: 'Главная', icon: 'Home' },
@@ -86,31 +88,34 @@ const Index = () => {
     setInputMessage('');
   };
 
-  const generateTest = () => {
+  const generateTest = async () => {
     if (!testTopic.trim()) return;
     
-    const sampleQuestions: Question[] = [
-      {
-        id: 1,
-        question: `Что является основой ${testTopic}?`,
-        options: ['Вариант A', 'Вариант B', 'Вариант C', 'Вариант D'],
-        correctAnswer: 1
-      },
-      {
-        id: 2,
-        question: `Какой принцип важен в ${testTopic}?`,
-        options: ['Принцип 1', 'Принцип 2', 'Принцип 3', 'Принцип 4'],
-        correctAnswer: 2
-      },
-      {
-        id: 3,
-        question: `Как применяется ${testTopic} на практике?`,
-        options: ['Метод A', 'Метод B', 'Метод C', 'Метод D'],
-        correctAnswer: 0
-      },
-    ];
+    setIsGenerating(true);
+    setTestError('');
+    setQuestions([]);
     
-    setQuestions(sampleQuestions);
+    try {
+      const response = await fetch('https://functions.poehali.dev/baeca4d4-6cab-4615-92d7-5174cd8b04f3', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ topic: testTopic })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Ошибка генерации теста');
+      }
+      
+      const data = await response.json();
+      setQuestions(data.questions);
+    } catch (error) {
+      setTestError(error instanceof Error ? error.message : 'Произошла ошибка');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const selectAnswer = (questionId: number, answerIndex: number) => {
@@ -310,17 +315,33 @@ const Index = () => {
                     <Input
                       value={testTopic}
                       onChange={(e) => setTestTopic(e.target.value)}
-                      placeholder="Введите тему для теста"
+                      placeholder="Например: 5 класс тема Фотосинтез"
                       className="flex-1 text-sm md:text-base"
+                      disabled={isGenerating}
                     />
                     <Button 
                       onClick={generateTest}
-                      className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 w-full md:w-auto"
+                      disabled={isGenerating || !testTopic.trim()}
+                      className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 w-full md:w-auto disabled:opacity-50"
                     >
-                      <Icon name="Wand2" size={18} className="mr-2" />
-                      Создать тест
+                      {isGenerating ? (
+                        <>
+                          <Icon name="Loader2" size={18} className="mr-2 animate-spin" />
+                          Генерирую...
+                        </>
+                      ) : (
+                        <>
+                          <Icon name="Wand2" size={18} className="mr-2" />
+                          Создать тест
+                        </>
+                      )}
                     </Button>
                   </div>
+                  {testError && (
+                    <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+                      {testError}
+                    </div>
+                  )}
                 </Card>
 
                 {questions.length > 0 && (
