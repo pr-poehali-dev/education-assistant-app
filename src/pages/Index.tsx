@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import Icon from '@/components/ui/icon';
 
 interface Message {
@@ -175,19 +174,25 @@ const Index = () => {
               </div>
               <h1 className="text-lg font-bold text-gray-900">EduMate</h1>
             </div>
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Icon name="Menu" size={24} />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-64">
-                <div className="flex flex-col h-full">
-                  <SidebarContent />
-                </div>
-              </SheetContent>
-            </Sheet>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              <Icon name="Menu" size={24} />
+            </Button>
           </div>
+
+          {mobileMenuOpen && (
+            <div className="md:hidden fixed inset-0 z-50 bg-black/50" onClick={() => setMobileMenuOpen(false)}>
+              <div 
+                className="bg-white w-64 h-full flex flex-col animate-slide-in-left"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <SidebarContent />
+              </div>
+            </div>
+          )}
 
           <div className="flex-1 overflow-auto">
             {activeTab === 'home' && (
